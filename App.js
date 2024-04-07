@@ -1,15 +1,48 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import 'react-native-gesture-handler';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { NavigationContainer } from '@react-navigation/native';
+import React, { useEffect, useState } from 'react';
+import Axios, { endpoints } from './Axios';
+import { StyleSheet } from 'react-native';
+import HomeScreen from './screens/HomeScreen/HomeScreen';
+import LoginScreen from './screens/LoginScreen/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen/RegisterScreen';
+import LessonScreen from './screens/LessonScreen/LessonScreen';
+import LessonDetailScreen from './screens/LessonScreen/LessonDetailScreen';
 
-export default function App() {
+const Drawer = createDrawerNavigator();
+
+const App = () => {
+  const [categories, setCategories] = useState(null);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const res = await Axios.get(endpoints['categories']);
+        setCategories(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadCategories();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+    <NavigationContainer>
+      <Drawer.Navigator>
+        <Drawer.Screen name='Home' component={HomeScreen} options={{ title: 'Khóa học' }} />
+        <Drawer.Screen name='Login' component={LoginScreen} options={{ title: 'Đăng nhập' }} />
+        <Drawer.Screen name='Register' component={RegisterScreen} options={{ title: 'Đăng ký' }} />
+        {categories?.map(category => <Drawer.Screen key={category.id} name={category.name} component={HomeScreen} initialParams={{ categoryId: category.id }} />)}
+        <Drawer.Screen name='Lesson' component={LessonScreen} options={{ title: 'Danh sách bài học', drawerItemStyle: { display: 'none' } }} />
+        <Drawer.Screen name='LessonDetail' component={LessonDetailScreen} options={{ title: 'Chi tiết bài học', drawerItemStyle: { display: 'none' } }} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  )
 }
+
+export default App;
 
 const styles = StyleSheet.create({
   container: {
